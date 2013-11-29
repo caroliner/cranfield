@@ -1,5 +1,5 @@
-#define NROWS  10
-#define NCOLS  10
+#define NROWS  20
+#define NCOLS  20
 #define CONV 1e-6
 #define INI 0.0 
 #define TAG_DOWN 666
@@ -176,7 +176,8 @@ error=0.0;
 				for(j=0; j<NCOLS; j+=2){
 					MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Sendrecv(&T[rowt][j], 1, MPI_DOUBLE, top,TAG_UP,&T[rowt+1][j], 1, MPI_DOUBLE, top,TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				}
+					printf("test   T[%d][%d]==%f",rowt+1,j,T[rowt+1][j]);	
+		}
 				for( i=rowd+1; i<rowt+1; i++ ){
 					for( j=1+(i+1)%2; j<NCOLS; j+=2){
 						T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +

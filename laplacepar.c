@@ -1,5 +1,5 @@
-#define NROWS  20
-#define NCOLS  20
+#define NROWS  100
+#define NCOLS  100
 #define CONV 1e-6
 #define INI 0.2 
 #define TAG_DOWN 666
@@ -80,7 +80,7 @@ error=0.0;
 						}}
 					MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 					iter++;
-			}while(maxerror>CONV&&iter<500);/* End of iteration */
+			}while(maxerror>CONV&&iter<5000);/* End of iteration */
   for( i=0; i<rowt+1; i++ )
                 for( j=0; j<NCOLS+1; j++ ){
                         Told[i][j] = T[i][j];
@@ -139,7 +139,7 @@ error=0.0;
 					}}
 				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 				iter++;
-		}while(maxerror>CONV&&iter<500);/* End of iteration */
+		}while(maxerror>CONV&&iter<5000);/* End of iteration */
 			
 		for( i=rowd+1; i<NROWS+1; i++ )
 		for( j=0; j<NCOLS+1; j++ ){

@@ -14,13 +14,44 @@
 
 int main(int argc, char **argv) {
 	FILE *out = fopen("serial.dat", "a"); // write only 
-	float T[NROWS+1][NCOLS+1], Told[NROWS+1][NCOLS+1];
-	double  y[NROWS+1];
+	double **T, **Told;
+	double  *y;
 	int   i,j, iter,rank,size;
 	int down,top;
 	int rowt, rowd;
 	double time1[8],time2[8];
 	double error,maxerror; // value for store the max of the error 
+		T = (double *) malloc((NROWS+1)*sizeof(double));
+	if(T == NULL)
+		fprintf(stderr, "out of memory\n");
+
+	for(i = 0; i < NROWS+1; i++)
+	{
+		T[i] = (double *)malloc((NCOLS+1)* sizeof(double));
+		if(T[i] == NULL)
+		{
+			fprintf(stderr, "out of memory\n");
+			return 1;
+		}
+	}
+
+	Told =(double *) malloc((NROWS+1)*sizeof(double));
+	if(Told == NULL)
+		fprintf(stderr, "out of memory\n");
+
+	for(i = 0; i < NROWS+1; i++)
+	{
+		Told[i] =(double *) malloc((NCOLS+1)* sizeof(double));
+		if(Told[i] == NULL)
+		{
+			fprintf(stderr, "out of memory\n");
+			return 1;
+		}
+	}
+
+	y =(double*) malloc((NROWS+1)*sizeof(double));
+	if(Told == NULL)
+		fprintf(stderr, "out of memory\n");
 	MPI_Init(&argc, &argv);
 	MPI_Status status;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);

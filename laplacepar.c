@@ -20,18 +20,18 @@ int main(int argc, char **argv) {
 	int NROWS, NCOLS;
 	double time1[8],time2[8];
 	double error,maxerror; // value for store the max of the error 
-	NROWS=argv[1];
-	NCOLS=argv[1];
+	NROWS=atoi(argv[1]);
+	NCOLS=atoi(argv[1]);
 		T = (double *) malloc((NROWS+1)*sizeof(double));
 	if(T == NULL)
-		fprintf(stderr, "out of memory\n");
+		printf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
 		T[i] = (double *)malloc((NCOLS+1)* sizeof(double));
 		if(T[i] == NULL)
 		{
-			fprintf(stderr, "out of memory\n");
+			printf(stderr, "out of memory\n");
 			return 1;
 		}
 	}
@@ -228,7 +228,7 @@ error=0.0;
 				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 				iter++;
 
-		}while(maxerror>CONV&&iter<500);/* End of iteration */
+		}while(maxerror>CONV&&iter<5000);/* End of iteration */
 		for( i=rowd+1; i<rowt+1; i++ )
 			for( j=0; j<NCOLS+1; j++ ){
 				Told[i][j] = T[i][j];
@@ -236,7 +236,8 @@ error=0.0;
 			}
 	}
 	time2[rank] = MPI_Wtime();
-	fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
+	fprintf(out, " %d %d %d %lf",size,NROWS,iter,time2[rank]-time1[rank]);
+	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
 	fclose(out);	
 MPI_Finalize();
 	return 0 ;

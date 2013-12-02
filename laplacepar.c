@@ -11,7 +11,7 @@
 #endif 
 
 int main(int argc, char **argv) {
-	FILE *out = fopen("serial.dat", "a"); // write only 
+	FILE *out = fopen("/panfs/storage/home/s205296/serial.dat", "a"); // write only 
 	double **T, **Told;
 	double  *y;
 	int   i,j, iter,rank,size;
@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
 	double error,maxerror; // value for store the max of the error 
 	NROWS=atoi(argv[1]);
 	NCOLS=atoi(argv[1]);
+printf("test   NROWS %d",NROWS);
 		T = (double *) malloc((NROWS+1)*sizeof(double));
 	if(T == NULL)
 		printf(stderr, "out of memory\n");
@@ -112,7 +113,7 @@ error=0.0;
 						}}
 					MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 					iter++;
-			}while(maxerror>CONV&&iter<5000);/* End of iteration */
+			}while(maxerror>CONV);/* End of iteration */
   for( i=0; i<rowt+1; i++ )
                 for( j=0; j<NCOLS+1; j++ ){
                         Told[i][j] = T[i][j];
@@ -143,7 +144,7 @@ T[NROWS][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i]));
                 }
 
 
-		/*    Do Computation on Sub-grid for Niter iterations     */
+		/* Do Computation on Sub-grid for Niter iterations     */
 
 		do {
 error=0.0;
@@ -151,13 +152,14 @@ error=0.0;
 			for(j=1; j<NCOLS; j+=2){
 				MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			}
-			for( i=rowd+1; i<NROWS; i++ )
+			for( i=rowd+1; i<NROWS; i++ ){
 				for( j=1+(i)%2; j<NCOLS; j+=2){
 					T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
 						T[i][j+1] + T[i][j-1] );
 					error=max(error,fabs((double)(Told[i][j]-T[i][j])));
 					Told[i][j] = T[i][j];
-				}
+			}	
+}
 
 				for(j=0; j<NCOLS; j+=2){
 					MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -171,7 +173,7 @@ error=0.0;
 					}}
 				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 				iter++;
-		}while(maxerror>CONV&&iter<5000);/* End of iteration */
+		}while(maxerror>CONV);/* End of iteration */
 			
 		for( i=rowd+1; i<NROWS+1; i++ )
 		for( j=0; j<NCOLS+1; j++ ){
@@ -228,7 +230,7 @@ error=0.0;
 				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 				iter++;
 
-		}while(maxerror>CONV&&iter<5000);/* End of iteration */
+		}while(maxerror>CONV);/* End of iteration */
 		for( i=rowd+1; i<rowt+1; i++ )
 			for( j=0; j<NCOLS+1; j++ ){
 				Told[i][j] = T[i][j];
@@ -236,7 +238,7 @@ error=0.0;
 			}
 	}
 	time2[rank] = MPI_Wtime();
-	fprintf(out, " %d %d %d %lf",size,NROWS,iter,time2[rank]-time1[rank]);
+	fprintf(out, " %d %d %d %lf %d\n",size,NROWS,iter,time2[rank]-time1[rank],rank);
 	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
 	fclose(out);	
 MPI_Finalize();

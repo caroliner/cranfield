@@ -1,5 +1,3 @@
-#define NROWS  100
-#define NCOLS  100
 #define CONV 1e-6
 #define INI 0.2 
 #define TAG_DOWN 666
@@ -19,8 +17,11 @@ int main(int argc, char **argv) {
 	int   i,j, iter,rank,size;
 	int down,top;
 	int rowt, rowd;
+	int NROWS, NCOLS;
 	double time1[8],time2[8];
 	double error,maxerror; // value for store the max of the error 
+	NROWS=argv[1];
+	NCOLS=argv[1];
 		T = (double *) malloc((NROWS+1)*sizeof(double));
 	if(T == NULL)
 		fprintf(stderr, "out of memory\n");

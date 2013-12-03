@@ -60,8 +60,11 @@ int main(int argc, char **argv) {
 	rowd=(int)(rank*NROWS/size);
 	rowt=(int)(rank+1)*NROWS/size;
 	time1[rank] = MPI_Wtime();
-iter=0;
-maxerror=0.0;
+	iter=0;
+	maxerror=0.0;
+	for( i=0; i<NROWS+1; i++ )
+		for( j=0; j<=NCOLS+1; j++ )
+			T[i][j]=0;
 	/*    Initial and Boundary Values     */
 	if(rank==0){
 		for(i=0;i<(rowt+1);i++){
@@ -70,13 +73,10 @@ maxerror=0.0;
 		for( i=1; i<rowt+1; i++ ){
 			for ( j=1; j<NCOLS; j++ ){
 				T[i][j] = INI;
-				T[i][NCOLS]=0.0;
 			}
 			T[i][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i])); //left boundarie
 		}
-		for(j=0;j<NCOLS+1;j++){
-			T[0][j]=0.0;
-		}
+
 		for( i=0; i<rowt+1; i++ )
 			for( j=0; j<NCOLS+1; j++ ){
 				Told[i][j] = T[i][j];
@@ -85,7 +85,7 @@ maxerror=0.0;
 			/*    Do Computation on Sub-grid for Niter iterations     */
 
 			do{ 
-error=0.0;
+				error=0.0;
 				/* exchange stripe with down neighbour */
 				for(j=1; j<NCOLS; j+=2){
 					MPI_Sendrecv(&T[rowt][j], 1, MPI_DOUBLE, top,TAG_UP,&T[rowt+1][j], 1, MPI_DOUBLE, top,TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -98,9 +98,9 @@ error=0.0;
 						Told[i][j] = T[i][j];
 					}
 
-				for(j=0; j<NCOLS; j+=2){
+					for(j=0; j<NCOLS; j+=2){
 						MPI_Sendrecv(&T[rowt][j], 1, MPI_DOUBLE, top,TAG_UP,&T[rowt+1][j], 1, MPI_DOUBLE, top,TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-}
+					}
 					for( i=1; i<rowt+1; i++ ){
 						for( j=1+(i+1)%2; j<NCOLS; j+=2){
 							T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
@@ -111,52 +111,52 @@ error=0.0;
 					MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 					iter++;
 			}while(maxerror>CONV);/* End of iteration */
-  for( i=0; i<rowt+1; i++ )
-                for( j=0; j<NCOLS+1; j++ ){
-                        Told[i][j] = T[i][j];
-                        printf("%d %d %f \n",i,j,T[i][j]);
-                }
+			for( i=0; i<rowt+1; i++ )
+				for( j=0; j<NCOLS+1; j++ ){
+					Told[i][j] = T[i][j];
+					printf("%d %d %f \n",i,j,T[i][j]);
+				}
 
 	}
 	else if (rank==size -1){
-	for(i=rowd+1;i<NROWS+1;i++){
-		y[i]=(double)i/(NROWS);
-	}
-	for( i=rowd+1; i<rowt; i++ ){
-		for ( j=1; j<NCOLS; j++ ){
-			T[i][j] = INI;
-			T[NROWS][j]=0.0;
+		for(i=rowd+1;i<NROWS+1;i++){
+			y[i]=(double)i/(NROWS);
 		}
-		T[i][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i])); //left boundarie
-		T[i][NCOLS]=0.0;
-	
-}
-T[NROWS][NCOLS]=0.0;
-T[NROWS][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i]));
- //left boundarie
+		for( i=rowd+1; i<rowt; i++ ){
+			for ( j=1; j<NCOLS; j++ ){
+				T[i][j] = INI;
 
-        for( i=rowd+1; i<rowt+1; i++ )
-                for( j=0; j<NCOLS+1; j++ ){
-                        Told[i][j] = T[i][j];
-                }
-
-
-		/* Do Computation on Sub-grid for Niter iterations     */
-
-		do {
-error=0.0;
-			/* exchange stripe with down neighbour */
-			for(j=1; j<NCOLS; j+=2){
-				MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			}
-			for( i=rowd+1; i<NROWS; i++ ){
-				for( j=1+(i)%2; j<NCOLS; j+=2){
-					T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
-						T[i][j+1] + T[i][j-1] );
-					error=max(error,fabs((double)(Told[i][j]-T[i][j])));
-					Told[i][j] = T[i][j];
-			}	
-}
+			T[i][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i])); //left boundarie
+
+
+		}
+		T[NROWS][NCOLS]=0.0;
+		T[NROWS][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i]));
+		//left boundarie
+
+		for( i=rowd+1; i<rowt+1; i++ )
+			for( j=0; j<NCOLS+1; j++ ){
+				Told[i][j] = T[i][j];
+			}
+
+
+			/* Do Computation on Sub-grid for Niter iterations     */
+
+			do {
+				error=0.0;
+				/* exchange stripe with down neighbour */
+				for(j=1; j<NCOLS; j+=2){
+					MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				}
+				for( i=rowd+1; i<NROWS; i++ ){
+					for( j=1+(i)%2; j<NCOLS; j+=2){
+						T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
+							T[i][j+1] + T[i][j-1] );
+						error=max(error,fabs((double)(Told[i][j]-T[i][j])));
+						Told[i][j] = T[i][j];
+					}	
+				}
 
 				for(j=0; j<NCOLS; j+=2){
 					MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -170,79 +170,79 @@ error=0.0;
 					}}
 				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 				iter++;
-		}while(maxerror>CONV);/* End of iteration */
-			
-		for( i=rowd+1; i<NROWS+1; i++ )
-		for( j=0; j<NCOLS+1; j++ ){
-			Told[i][j] = T[i][j];
-			printf("%d %d %f \n",i,j,T[i][j]);
-		}
+			}while(maxerror>CONV);/* End of iteration */
+
+			for( i=rowd+1; i<NROWS+1; i++ )
+				for( j=0; j<NCOLS+1; j++ ){
+					Told[i][j] = T[i][j];
+					printf("%d %d %f \n",i,j,T[i][j]);
+				}
 	}
 	else{
-	for(i=rowd+1;i<(rowt+1);i++){
-		y[i]=(double)i/(NROWS);
-	}
-	for( i=rowd+1; i<rowt+1; i++ ){
-		for ( j=1; j<NCOLS; j++ ){
-			T[i][j] = INI;
+		for(i=rowd+1;i<(rowt+1);i++){
+			y[i]=(double)i/(NROWS);
 		}
-		T[i][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i])); //left boundarie
-		T[i][NCOLS]=0.0;
-	}
- for( i=rowd+1; i<rowt+1; i++ )
-                for( j=0; j<NCOLS+1; j++ ){
-                        Told[i][j] = T[i][j];
-                }
-
-		/*    Do Computation on Sub-grid for Niter iterations     */
-
-		do {
-error=0.0;
-			/* exchange stripe with down neighbour */
-			for(j=1; j<NCOLS; j+=2){
-				MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-				MPI_Sendrecv(&T[rowt][j], 1, MPI_DOUBLE, top,TAG_UP,&T[rowt+1][j], 1, MPI_DOUBLE, top,TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		for( i=rowd+1; i<rowt+1; i++ ){
+			for ( j=1; j<NCOLS; j++ ){
+				T[i][j] = INI;
 			}
-			for( i=rowd+1; i<rowt+1; i++ )
-				for( j=1+(i)%2; j<NCOLS; j+=2){
-					T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
-						T[i][j+1] + T[i][j-1] );
-					error=max(error,fabs((double)(Told[i][j]-T[i][j])));
-					Told[i][j] = T[i][j];
+			T[i][0]= (double)(sin(M_PI*y[i])*sin(M_PI*y[i])); //left boundarie
+			T[i][NCOLS]=0.0;
+		}
+		for( i=rowd+1; i<rowt+1; i++ )
+			for( j=0; j<NCOLS+1; j++ ){
+				Told[i][j] = T[i][j];
+			}
 
-				}
+			/*    Do Computation on Sub-grid for Niter iterations     */
 
-				for(j=0; j<NCOLS; j+=2){
+			do {
+				error=0.0;
+				/* exchange stripe with down neighbour */
+				for(j=1; j<NCOLS; j+=2){
 					MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					MPI_Sendrecv(&T[rowt][j], 1, MPI_DOUBLE, top,TAG_UP,&T[rowt+1][j], 1, MPI_DOUBLE, top,TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-}
-				for( i=rowd+1; i<rowt+1; i++ ){
-					for( j=1+(i+1)%2; j<NCOLS; j+=2){
+				}
+				for( i=rowd+1; i<rowt+1; i++ )
+					for( j=1+(i)%2; j<NCOLS; j+=2){
 						T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
 							T[i][j+1] + T[i][j-1] );
 						error=max(error,fabs((double)(Told[i][j]-T[i][j])));
 						Told[i][j] = T[i][j];
 
-					}}
-				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-				iter++;
+					}
 
-		}while(maxerror>CONV);/* End of iteration */
-		for( i=rowd+1; i<rowt+1; i++ )
-			for( j=0; j<NCOLS+1; j++ ){
-				Told[i][j] = T[i][j];
-				printf("%d %d %f \n",i,j,T[i][j]);
-			}
+					for(j=0; j<NCOLS; j+=2){
+						MPI_Sendrecv(&T[rowd+1][j], 1, MPI_DOUBLE, down,TAG_UP,&T[rowd][j], 1 , MPI_DOUBLE, down, TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+						MPI_Sendrecv(&T[rowt][j], 1, MPI_DOUBLE, top,TAG_UP,&T[rowt+1][j], 1, MPI_DOUBLE, top,TAG_UP,MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					}
+					for( i=rowd+1; i<rowt+1; i++ ){
+						for( j=1+(i+1)%2; j<NCOLS; j+=2){
+							T[i][j] = 0.25 * ( T[i+1][j] + T[i-1][j] +
+								T[i][j+1] + T[i][j-1] );
+							error=max(error,fabs((double)(Told[i][j]-T[i][j])));
+							Told[i][j] = T[i][j];
+
+						}}
+					MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+					iter++;
+
+			}while(maxerror>CONV);/* End of iteration */
+			for( i=rowd+1; i<rowt+1; i++ )
+				for( j=0; j<NCOLS+1; j++ ){
+					Told[i][j] = T[i][j];
+					printf("%d %d %f \n",i,j,T[i][j]);
+				}
 	}
 	time2[rank] = MPI_Wtime();
 	fprintf(out, " %d %d %d %lf %d\n",size,NROWS,iter,time2[rank]-time1[rank],rank);
 	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
-//	fclose(out);	
-		free(y);
+	//	fclose(out);	
+	free(y);
 	for (i=0; i < NCOLS+1; i++){
-		free(Told[i]);
-		free(T[i]); }
-	free(Told);
-	free(T);
+		free((void*)Told[i]);
+		free((void*)T[i]); }
+	free((void**)Told);
+	free((void**)T);
 	MPI_Finalize();
 }    /* End of Program */

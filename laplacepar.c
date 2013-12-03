@@ -1,7 +1,6 @@
 #define CONV 1e-6
 #define INI 0.2 
-#define TAG_DOWN 666
-#define TAG_UP 999
+#define TAG_UP 9
 #define _USE_MATH_DEFINES // for pi 
 #include <stdio.h>      /* printf */
 #include <math.h>       /* sin */
@@ -22,8 +21,11 @@ int main(int argc, char **argv) {
 	double error,maxerror; // value for store the max of the error 
 	NROWS=atoi(argv[1]);
 	NCOLS=atoi(argv[1]);
-printf("test   NROWS %d",NROWS);
-		T = (double *) malloc((NROWS+1)*sizeof(double));
+	T = (double *) malloc((NROWS+1)*sizeof(double));
+	MPI_Init(&argc, &argv);
+	MPI_Status status;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	if(T == NULL)
 		printf(stderr, "out of memory\n");
 
@@ -54,10 +56,6 @@ printf("test   NROWS %d",NROWS);
 	y =(double*) malloc((NROWS+1)*sizeof(double));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
-	MPI_Init(&argc, &argv);
-	MPI_Status status;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	down = rank-1; if ( rank == 0 ) down=MPI_PROC_NULL;
 	top = rank+1; if (rank == size-1 ) top=MPI_PROC_NULL;
 	rowd=(int)(rank*NROWS/size);
@@ -241,6 +239,12 @@ error=0.0;
 	fprintf(out, " %d %d %d %lf %d\n",size,NROWS,iter,time2[rank]-time1[rank],rank);
 	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
 	fclose(out);	
-MPI_Finalize();
+		free(y);
+	for (i=0; i < NCOLS+1; i++){
+		free(Told[i]);
+		free(T[i]); }
+	free(Told);
+	free(T);
+	MPI_Finalize();
 	return 0 ;
 }    /* End of Program */

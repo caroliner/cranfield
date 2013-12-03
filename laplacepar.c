@@ -10,7 +10,7 @@
 #endif 
 
 int main(int argc, char **argv) {
-	FILE *out = fopen("/panfs/storage/home/s205296/serial.dat", "a"); // write only 
+	FILE *out = fopen("/panfs/storage/home/s205296/4proc.dat", "a"); // write only 
 	double **T, **Told;
 	double  *y;
 	int   i,j, iter,rank,size;
@@ -21,11 +21,11 @@ int main(int argc, char **argv) {
 	double error,maxerror; // value for store the max of the error 
 	NROWS=atoi(argv[1]);
 	NCOLS=atoi(argv[1]);
-	T = (double *) malloc((NROWS+1)*sizeof(double));
 	MPI_Init(&argc, &argv);
 	MPI_Status status;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	T = (double **) malloc((NROWS+1)*sizeof(double));
 	if(T == NULL)
 		printf(stderr, "out of memory\n");
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	Told =(double *) malloc((NROWS+1)*sizeof(double));
+	Told =(double **) malloc((NROWS+1)*sizeof(double));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
 
@@ -52,7 +52,6 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 	}
-
 	y =(double*) malloc((NROWS+1)*sizeof(double));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
@@ -238,7 +237,7 @@ error=0.0;
 	time2[rank] = MPI_Wtime();
 	fprintf(out, " %d %d %d %lf %d\n",size,NROWS,iter,time2[rank]-time1[rank],rank);
 	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
-	fclose(out);	
+//	fclose(out);	
 		free(y);
 	for (i=0; i < NCOLS+1; i++){
 		free(Told[i]);
@@ -246,5 +245,4 @@ error=0.0;
 	free(Told);
 	free(T);
 	MPI_Finalize();
-	return 0 ;
 }    /* End of Program */

@@ -5,6 +5,7 @@
 #include <stdio.h>      /* printf */
 #include <math.h>       /* sin */
 #include "mpi.h"
+#include <stdlib.h>
 #ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))// define the max function
 #endif 
@@ -33,21 +34,21 @@ int main(int argc, char **argv) {
 	time1[rank] = MPI_Wtime();
 	if(rank==0){
 		sizesub= rowt +1; 
-	T = (double **) malloc((sizesub)*sizeof(double));
+	T = (double **) malloc((sizesub)*sizeof(double*));
 	if(T == NULL)
-		printf(stderr, "out of memory\n");
+		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
 		T[i] = (double *)malloc((NCOLS)* sizeof(double));
 		if(T[i] == NULL)
 		{
-			printf(stderr, "out of memory\n");
+			fprintf(stderr, "out of memory\n");
 			return 1;
 		}
 	}
 
-	Told =(double **) malloc((sizesub)*sizeof(double));
+	Told =(double **) malloc((sizesub)*sizeof(double*));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
 
@@ -244,9 +245,9 @@ int main(int argc, char **argv) {
 	//	fclose(out);	
 	free(y);
 	for (i=0; i < NCOLS+1; i++){
-		free((void*)Told[i]);
-		free((void*)T[i]); }
-	free((void**)Told);
-	free((void**)T);
+		free(Told[i]);
+		free(T[i]); }
+	free(Told);
+	free(T);
 	MPI_Finalize();
 }    /* End of Program */

@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 	int rowt, rowd;
 	int sizesub;
 	int NROWS, NCOLS;
-	double time1[8],time2[8];
+	double *time1,*time2;
 	double error,maxerror; // value for store the max of the error 
 	NROWS=atoi(argv[1]);
 	NCOLS=atoi(argv[1]);
@@ -31,7 +31,6 @@ int main(int argc, char **argv) {
 	top = rank+1; if (rank == size-1 ) top=MPI_PROC_NULL;
 	rowd=(int)(rank*NROWS/size);
 	rowt=(int)(rank+1)*NROWS/size;
-	time1[rank] = MPI_Wtime();
 	if(rank==0){
 	sizesub= rowt +1; 
 	T = (double **) malloc((sizesub)*sizeof(double*));
@@ -62,8 +61,15 @@ int main(int argc, char **argv) {
 		}
 	}
 	y =(double*) malloc((sizesub)*sizeof(double));
-	if(Told == NULL)
+	if(y == NULL)
 		fprintf(stderr, "out of memory\n");
+	time1=(double*) malloc((size)*sizeof(double));
+        if(time1 == NULL)
+                fprintf(stderr, "out of memory\n");
+	time2 =(double*) malloc((size)*sizeof(double));
+        if(Told == NULL)
+                fprintf(stderr, "out of memory\n");
+	time1[rank] = MPI_Wtime();
 	iter=0;
 	maxerror=0.0;
 	for( i=0; i<NROWS+1; i++ )
@@ -120,12 +126,12 @@ int main(int argc, char **argv) {
 					Told[i][j] = T[i][j];
 					printf("%d %d %f \n",i,j,T[i][j]);
 				}
-	free(y);
-	for (i=0; i < NCOLS+1; i++){
-		free(Told[i]);
-		free(T[i]); }
-	free(Told);
-	free(T);
+	//free(y);
+	//for (i=0; i < NCOLS+1; i++){
+	//	free(Told[i]);
+	//	free(T[i]); }
+	//free(Told);
+	//free(T);
 	}
 	//else if (rank==size -1){
 	//	for(i=rowd+1;i<NROWS+1;i++){

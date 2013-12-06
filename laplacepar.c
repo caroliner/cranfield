@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
 	int down,top;
 	int rowt, rowd;
 	int NROWS, NCOLS;
-	double time1[8],time2[8];
+	double time1,time2;
 	double error,maxerror; // value for store the max of the error 
 	NROWS=atoi(argv[1]);
 	NCOLS=atoi(argv[1]);
@@ -26,13 +26,13 @@ int main(int argc, char **argv) {
 	MPI_Status status;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	T = (double **) calloc((NROWS+1)*sizeof(double*));
+	T = (double **) calloc((NROWS+1),sizeof(double*));
 	if(T == NULL)
 		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
-		T[i] = (double *)calloc((NCOLS+1)* sizeof(double));
+		T[i] = (double *)calloc((NCOLS+1), sizeof(double));
 		if(T[i] == NULL)
 		{
 			fprintf(stderr, "out of memory\n");
@@ -40,22 +40,28 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	Told =(double **) calloc((NROWS+1)*sizeof(double));
+	Told =(double **) calloc((NROWS+1),sizeof(double));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
-		Told[i] =(double *) calloc((NCOLS+1)* sizeof(double));
+		Told[i] =(double *) calloc((NCOLS+1), sizeof(double));
 		if(Told[i] == NULL)
 		{
 			fprintf(stderr, "out of memory\n");
 			return 1;
 		}
 	}
-	y =(double*) calloc((NROWS+1)*sizeof(double));
-	if(Told == NULL)
+	y =(double*) calloc((NROWS+1),sizeof(double));
+	if(y == NULL)
 		fprintf(stderr, "out of memory\n");
+ time1 =(double*) calloc((size),sizeof(double));
+        if(time1 == NULL)
+                fprintf(stderr, "out of memory\n");
+time2 =(double*) calloc((size),sizeof(double));
+        if(Told == NULL)
+                fprintf(stderr, "out of memory\n");
 	down = rank-1; if ( rank == 0 ) down=MPI_PROC_NULL;
 	top = rank+1; if (rank == size-1 ) top=MPI_PROC_NULL;
 	rowd=(int)(rank*NROWS/size);
@@ -63,9 +69,9 @@ int main(int argc, char **argv) {
 	time1[rank] = MPI_Wtime();
 	iter=0;
 	maxerror=0.0;
-	for( i=0; i<NROWS+1; i++ )
-		for( j=0; j<=NCOLS+1; j++ )
-			T[i][j]=0;
+//	for( i=0; i<NROWS+1; i++ )
+	//	for( j=0; j<=NCOLS+1; j++ )
+	//		T[i][j]=0;
 	/*    Initial and Boundary Values     */
 	if(rank==0){
 		for(i=0;i<(rowt+1);i++){

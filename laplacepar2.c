@@ -120,7 +120,12 @@ int main(int argc, char **argv) {
 					Told[i][j] = T[i][j];
 					printf("%d %d %f \n",i,j,T[i][j]);
 				}
-
+	free(y);
+	for (i=0; i < NCOLS+1; i++){
+		free(Told[i]);
+		free(T[i]); }
+	free(Told);
+	free(T);
 	}
 	//else if (rank==size -1){
 	//	for(i=rowd+1;i<NROWS+1;i++){
@@ -243,11 +248,5 @@ int main(int argc, char **argv) {
 	fprintf(out, " %d %d %d %lf %d\n",size,NROWS,iter,time2[rank]-time1[rank],rank);
 	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
 	//	fclose(out);	
-	free(y);
-	for (i=0; i < NCOLS+1; i++){
-		free(Told[i]);
-		free(T[i]); }
-	free(Told);
-	free(T);
 	MPI_Finalize();
 }    /* End of Program */

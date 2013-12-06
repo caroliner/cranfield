@@ -5,6 +5,7 @@
 #include <stdio.h>      /* printf */
 #include <math.h>       /* sin */
 #include "mpi.h"
+#include <stdlib.h>
 #ifndef max
 #define max(a,b) ((a) > (b) ? (a) : (b))// define the max function
 #endif 
@@ -25,16 +26,16 @@ int main(int argc, char **argv) {
 	MPI_Status status;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	T = (double **) malloc((NROWS+1)*sizeof(double));
+	T = (double **) malloc((NROWS+1)*sizeof(double*));
 	if(T == NULL)
-		printf(stderr, "out of memory\n");
+		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
 		T[i] = (double *)malloc((NCOLS+1)* sizeof(double));
 		if(T[i] == NULL)
 		{
-			printf(stderr, "out of memory\n");
+			fprintf(stderr, "out of memory\n");
 			return 1;
 		}
 	}

@@ -26,13 +26,13 @@ int main(int argc, char **argv) {
 	MPI_Status status;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	T = (double **) malloc((NROWS+1)*sizeof(double*));
+	T = (double **) calloc((NROWS+1)*sizeof(double*));
 	if(T == NULL)
 		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
-		T[i] = (double *)malloc((NCOLS+1)* sizeof(double));
+		T[i] = (double *)calloc((NCOLS+1)* sizeof(double));
 		if(T[i] == NULL)
 		{
 			fprintf(stderr, "out of memory\n");
@@ -40,20 +40,20 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	Told =(double **) malloc((NROWS+1)*sizeof(double));
+	Told =(double **) calloc((NROWS+1)*sizeof(double));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
-		Told[i] =(double *) malloc((NCOLS+1)* sizeof(double));
+		Told[i] =(double *) calloc((NCOLS+1)* sizeof(double));
 		if(Told[i] == NULL)
 		{
 			fprintf(stderr, "out of memory\n");
 			return 1;
 		}
 	}
-	y =(double*) malloc((NROWS+1)*sizeof(double));
+	y =(double*) calloc((NROWS+1)*sizeof(double));
 	if(Told == NULL)
 		fprintf(stderr, "out of memory\n");
 	down = rank-1; if ( rank == 0 ) down=MPI_PROC_NULL;

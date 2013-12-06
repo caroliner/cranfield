@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
 							error=max(error,fabs((double)(Told[i][j]-T[i][j])));
 							Told[i][j] = T[i][j];
 						}}
+					MPI_Barrier(MPI_COMM_WORLD);
 					MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 					iter++;
 			}while(maxerror>CONV);/* End of iteration */
@@ -168,6 +169,7 @@ int main(int argc, char **argv) {
 						error=max(error,fabs((double)(Told[i][j]-T[i][j])));
 						Told[i][j] = T[i][j];
 					}}
+				MPI_Barrier(MPI_COMM_WORLD);
 				MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 				iter++;
 			}while(maxerror>CONV);/* End of iteration */
@@ -224,6 +226,7 @@ int main(int argc, char **argv) {
 							Told[i][j] = T[i][j];
 
 						}}
+					MPI_Barrier(MPI_COMM_WORLD);
 					MPI_Allreduce(&error, &maxerror, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 					iter++;
 
@@ -237,12 +240,12 @@ int main(int argc, char **argv) {
 	time2[rank] = MPI_Wtime();
 	fprintf(out, " %d %d %d %lf %d\n",size,NROWS,iter,time2[rank]-time1[rank],rank);
 	//fprintf(out,"Time elapsed for processor %d: %lf  iter %d \n", rank, time2[rank]-time1[rank],iter);
-	//	fclose(out);	
+	fclose(out);	
 	free(y);
 	for (i=0; i < NCOLS+1; i++){
-		free((void*)Told[i]);
-		free((void*)T[i]); }
-	free((void**)Told);
-	free((void**)T);
+		free(Told[i]);
+		free(T[i]); }
+	free(Told);
+	free(T);
 	MPI_Finalize();
 }    /* End of Program */

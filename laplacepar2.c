@@ -33,14 +33,14 @@ int main(int argc, char **argv) {
 	rowt=(int)(rank+1)*NROWS/size;
 	time1[rank] = MPI_Wtime();
 	if(rank==0){
-		sizesub= rowt +1; 
+	sizesub= rowt +1; 
 	T = (double **) malloc((sizesub)*sizeof(double*));
 	if(T == NULL)
 		fprintf(stderr, "out of memory\n");
 
 	for(i = 0; i < NROWS+1; i++)
 	{
-		T[i] = (double *)malloc((NCOLS)* sizeof(double));
+		T[i] = (double *)malloc((NCOLS+1)* sizeof(double));
 		if(T[i] == NULL)
 		{
 			fprintf(stderr, "out of memory\n");
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
 	for(i = 0; i < NROWS+1; i++)
 	{
-		Told[i] =(double *) malloc((NCOLS)* sizeof(double));
+		Told[i] =(double *) malloc((NCOLS+1)* sizeof(double));
 		if(Told[i] == NULL)
 		{
 			fprintf(stderr, "out of memory\n");
